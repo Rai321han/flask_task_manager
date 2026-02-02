@@ -157,8 +157,13 @@ def delete_task(id):
 
 
 # frontend route
-@app.get("/tasks")
+@app.get("/")
 def home():
+    return render_template("task/index.html")
+
+
+@app.get("/tasks")
+def tasks():
     with get_db() as db:
         stmt = select(Task)
         tasks = db.execute(stmt).scalars().all()

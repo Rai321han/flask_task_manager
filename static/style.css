@@ -235,3 +235,137 @@ h1 {
     opacity: 0.6;
     padding-right: 5px;
 }
+
+.nav_container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav {
+    display: flex;
+    gap: 10px;
+    flex-direction: row;
+}
+
+.nav a {
+    text-decoration: none;
+    color: #494949;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.nav a:hover {
+    color: black;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+/* Base reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #ffffff;
+  color: #111;
+}
+
+/* Layout */
+.container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 0 20px;
+}
+
+/* Header */
+.site-header {
+  border-bottom: 1px solid #eee;
+}
+
+.header-inner {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.nav a {
+  margin-left: 20px;
+  text-decoration: none;
+  color: #555;
+  font-size: 14px;
+}
+
+.nav a:hover {
+  color: #000;
+}
+
+/* Hero */
+.hero {
+  text-align: center;
+  padding: 120px 0 140px;
+}
+
+.hero-eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 24px;
+}
+
+.hero-title {
+  font-size: 48px;
+  font-weight: 500;
+  line-height: 1.2;
+  margin-bottom: 24px;
+}
+
+.hero-subtitle {
+  font-size: 16px;
+  color: #555;
+  max-width: 520px;
+  margin: 0 auto 40px;
+}
+
+/* Buttons */
+.hero-actions {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+}
+
+.btn {
+  text-decoration: none;
+  font-size: 14px;
+  padding: 12px 26px;
+  border-radius: 6px;
+  transition: 0.2s ease;
+}
+
+.btn-primary {
+  background: #111;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #000;
+}
+
+.btn-link {
+  color: #111;
+}
+
+.btn-link:hover {
+  text-decoration: underline;
+}
+
