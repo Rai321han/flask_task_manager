@@ -6,7 +6,6 @@ A Flask-based REST API and web interface for managing tasks with SQLAlchemy ORM 
 
 - [Overview](#overview)
 - [Project Structure](#project-structure)
-- [Configuration](#configuration)
 - [Installation](#installation)
 - [API Documentation](#api-documentation)
   - [Base URL](#base-url)
