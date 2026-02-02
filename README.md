@@ -64,25 +64,6 @@ task_manager/
 
 ```
 
-## Configuration
-
-### Environment Variables
-
-Create a `.env` file in the project root with the following variables:
-
-```env
-FLASK_APP=app.py
-FLASK_ENV=development
-DATABASE_URL=database connection string (etc., sqlite:///task_manager.db)
-```
-
-**Variables:**
-- `FLASK_APP`: Entry point for Flask application
-- `FLASK_ENV`: Environment mode (development/production)
-- `DATABASE_URL`: Database connection string (SQLite by default)
-
----
-
 ---
 
 ## Installation
@@ -114,12 +95,25 @@ DATABASE_URL=database connection string (etc., sqlite:///task_manager.db)
    ```bash
    pip install -r requirements.txt
    ```
+4. **Configuration**
+  Create a `.env` file in the project root with the following variables:
 
-4. **Initialize the database:**
+    ```env
+    FLASK_APP=app.py
+    FLASK_ENV=development
+    DATABASE_URL=database connection string (etc., sqlite:///task_manager.db)
+
+
+    #  Variables:
+    # `FLASK_APP`: Entry point for Flask application
+    # `FLASK_ENV`: Environment mode (development/production)
+    # `DATABASE_URL`: Database connection string (SQLite by default)
+    ```
+5. **Initialize the database:**
    ```bash
    python -m init_db.py
    ```
-5. **Run the project:**
+6. **Run the project:**
    ```bash
    flask run
    ```
