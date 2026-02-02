@@ -1,6 +1,16 @@
+"""
+Task Manager Flask Application.
+
+This module implements a Flask-based REST API and web interface for managing tasks.
+It provides endpoints for creating, reading, updating, and deleting tasks, as well as
+a web interface for viewing and interacting with tasks.
+
+The application uses SQLAlchemy for database operations and Pydantic for data validation.
+"""
+
 from logger.logger import setup_logger
 import logging
-from flask import Flask, request, render_template, abort, jsonify
+from flask import Flask, request, render_template, jsonify
 from db.db import get_db
 from db.models import Task, TaskStatus
 from datetime import date
@@ -18,6 +28,14 @@ app = Flask(__name__)
 
 @app.get("/api/v1/tasks/<int:id>")
 def show_task(id):
+    """Retrieve a single task by its ID.
+    
+    Args:
+        id (int): The unique identifier of the task.
+    
+    Returns:
+        dict: Task data as a dictionary, or error response with 404 status if not found.
+    """
     with get_db() as db:
         stmt = select(Task).where(Task.id == id)
         task = db.execute(stmt).scalar_one_or_none()
@@ -29,6 +47,17 @@ def show_task(id):
 
 @app.get("/api/v1/tasks")
 def alltasks():
+    """Retrieve all tasks with optional filtering and sorting.
+    
+    Query Parameters:
+        q (str): Search query to filter tasks by title or description.
+        status (str): Filter tasks by status.
+        sort (str): Field to sort by (default: 'created_at').
+        order (str): Sort order 'asc' or 'desc' (default: 'asc').
+    
+    Returns:
+        list: List of task dictionaries matching the criteria.
+    """
     q = request.args.get("q", "").strip()
     status = request.args.get("status", "").strip()
     sort_by = request.args.get("sort", "created_at").strip()
@@ -59,6 +88,18 @@ def alltasks():
 
 @app.post("/api/v1/tasks")
 def create_task():
+    """Create a new task.
+    
+    Request JSON Body:
+        title (str): Task title.
+        description (str): Task description.
+        status (str): Task status.
+        due_date (str, optional): Due date in ISO format.
+    
+    Returns:
+        tuple: Task data dictionary and 201 status code on success,
+               or error response with 400 status code on validation failure.
+    """
     try:
         validated = TaskSchema(**request.get_json())
     except ValidationError as e:
@@ -93,17 +134,33 @@ def create_task():
 
 @app.patch("/api/v1/tasks/<int:task_id>")
 def update_task(task_id):
+    """Update an existing task.
+    
+    Args:
+        task_id (int): The unique identifier of the task to update.
+    
+    Request JSON Body:
+        title (str, optional): Updated task title.
+        description (str, optional): Updated task description.
+        status (str, optional): Updated task status.
+        due_date (str, optional): Updated due date in ISO format.
+    
+    Returns:
+        tuple: Updated task data dictionary and 200 status code on success,
+               or error response with 400/404 status code on failure.
+    """
     data = request.get_json()
 
     if not data:
         logger.error("Updating tasks | No data provided")
-        abort(400, "No data provided")
+        return {"error": "no data provided"}, 400
 
     with get_db() as db:
         task = db.execute(select(Task).where(Task.id == task_id)).scalar_one_or_none()
 
         if not task:
-            abort(404, "Task not found")
+            logger.error("task not found for id = %s", task_id)
+            return {"error": f"task not found"}, 400
 
         if "title" in data:
             task.title = data["title"]
@@ -131,6 +188,15 @@ def update_task(task_id):
 
 
 def task_to_dict(task: Task):
+    """Convert a Task object to a dictionary.
+    
+    Args:
+        task (Task): The Task object to convert.
+    
+    Returns:
+        dict: Dictionary representation of the task with all fields
+              including id, title, description, status, created_at, and due_date.
+    """
     return {
         "id": task.id,
         "title": task.title,
@@ -143,6 +209,15 @@ def task_to_dict(task: Task):
 
 @app.delete("/api/v1/tasks/<int:id>")
 def delete_task(id):
+    """Delete a task by its ID.
+    
+    Args:
+        id (int): The unique identifier of the task to delete.
+    
+    Returns:
+        tuple: Success message and 200 status code on successful deletion,
+               or error response with 404 status code if task not found.
+    """
     with get_db() as db:
         task = db.execute(select(Task).where(Task.id == id)).scalar_one_or_none()
 
@@ -156,14 +231,24 @@ def delete_task(id):
     return {"message": "Task deleted"}, 200
 
 
-# frontend route
+# Frontend routes
 @app.get("/")
 def home():
+    """Render the home page.
+    
+    Returns:
+        str: Rendered HTML template for the home/index page.
+    """
     return render_template("task/index.html")
 
 
 @app.get("/tasks")
 def tasks():
+    """Render the tasks list page with all tasks.
+    
+    Returns:
+        str: Rendered HTML template displaying all tasks.
+    """
     with get_db() as db:
         stmt = select(Task)
         tasks = db.execute(stmt).scalars().all()
