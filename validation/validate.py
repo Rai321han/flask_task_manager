@@ -7,9 +7,25 @@ from db.models import TaskStatus
 
 class TaskSchema(BaseModel):
     title: str = Field(..., min_length=1)
-    description: Optional[str]
     status: Optional[str] = TaskStatus.todo.value
-    due_date: Optional[date]
+    due_date: Optional[date] = None
+    description: Optional[str] = None
+
+    @field_validator("due_date")
+    def validate_due_date(cls, v):
+        # Only validate if user provided a value
+        if v in (None, ""):
+            return None
+        # If it's already a date, just return it
+        if isinstance(v, date):
+            return v
+        # Try to parse string into date
+        try:
+            return date.fromisoformat(v)
+        except Exception:
+            raise ValueError(
+                f"due_date must be a valid date in YYYY-MM-DD format, got {v!r}"
+            )
 
     @model_validator(mode="before")
     def check_title(cls, v):
