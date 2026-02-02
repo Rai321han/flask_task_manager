@@ -32,7 +32,8 @@
         <div>Title</div>
         <div>Status</div>
         <div>Due</div>
-        <div>Details</div>
+        <div>Created at</div>
+        <div>Actions</div>
     </div>
     <!-- Task rows will be inserted here dynamically -->
 </div>
@@ -43,6 +44,29 @@
 </div>
 
 <script>
+    const STATUS_FLOW = ["todo", "in_progress", "done"];
+
+    async function toggleStatus(taskId, currentStatus) {
+        const currentIndex = STATUS_FLOW.indexOf(currentStatus);
+        const nextStatus = STATUS_FLOW[(currentIndex + 1) % STATUS_FLOW.length];
+
+        const res = await fetch(`/api/v1/tasks/${taskId}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ status: nextStatus })
+        });
+
+        if (!res.ok) {
+            alert("Failed to update status");
+            return;
+        }
+
+        fetchTasks(); // refresh UI
+    }
+
+
     async function fetchTasks() {
         const q = document.getElementById("search").value.trim();
         const status = document.getElementById("status").value;
@@ -79,15 +103,36 @@
             row.className = "table-row";
 
             row.innerHTML = `
-            <div class="title">${task.title}</div>
+            <div class="task_info">
+                <div class="title">${task.title}</div>
+                <p class="tasks_description">${task.description || ""}</p>
+            </div>
             <div>
                 <span class="badge ${task.status.toLowerCase().replace(" ", "_")}">
                     ${task.status.replace("_", " ")}
                 </span>
             </div>
             <div class="muted">${task.due_date || "—"}</div>
-            <div>
-                <a href="/tasks/${task.id}" class="link">View →</a>
+            <div class="muted">${task.created_at}</div>
+            <div class="actions">
+                <button
+                    class="action-btn ${
+                        task.status === "todo"
+                            ? "status_in_progress"
+                            : task.status === "in_progress"
+                            ? "status_done"
+                            : "status_todo"
+                    }"
+                    onclick="toggleStatus(${task.id}, '${task.status}')"
+                >
+                    ${
+                        task.status === "todo"
+                            ? "Mark as in progress"
+                            : task.status === "in_progress"
+                            ? "Mark as done"
+                            : "Mark as todo"
+                    }
+                </button>
             </div>
         `;
 

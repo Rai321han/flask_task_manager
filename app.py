@@ -1,8 +1,10 @@
-from flask import Flask, request, render_template, redirect, abort
+from flask import Flask, request, render_template, redirect, abort, jsonify
 from db.db import get_db
 from db.models import Task, TaskStatus
 from datetime import date
-from sqlalchemy import select, insert, update, or_, asc, desc
+from sqlalchemy import select, update, or_, asc, desc
+from validation.validate import TaskSchema
+from pydantic import ValidationError
 
 from dotenv import load_dotenv
 
@@ -50,13 +52,16 @@ def alltasks():
 
 @app.post("/api/v1/tasks")
 def create_task():
-    data = request.get_json()
+    try:
+        validated = TaskSchema(**request.get_json())
+    except ValidationError as e:
+        return jsonify({"errors": e.errors()}), 400
 
     task = Task(
-        title=data["title"],
-        description=data.get("description"),
-        status=TaskStatus(data["status"]),
-        due_date=date.fromisoformat(data["due_date"]) if data.get("due_date") else None,
+        title=validated.title,
+        description=validated.description,
+        status=TaskStatus(validated.status),
+        due_date=validated.due_date,
     )
 
     with get_db() as db:
@@ -64,7 +69,14 @@ def create_task():
         db.commit()
         db.refresh(task)
 
-    return task_to_dict(task), 201
+    return {
+        "id": task.id,
+        "title": task.title,
+        "description": task.description,
+        "status": task.status.value,
+        "created_at": task.created_at.isoformat(),
+        "due_date": task.due_date.isoformat() if task.due_date else None,
+    }, 201
 
 
 @app.patch("/api/v1/tasks/<int:task_id>")
@@ -127,6 +139,19 @@ def update_task_status(id):
         db.commit()
 
     return redirect(f"/tasks/{id}")
+
+
+@app.delete("/api/v1/tasks/<int:id>")
+def delete_task(id):
+    with get_db() as db:
+        task = db.execute(select(Task).where(Task.id == id)).scalar_one_or_none()
+
+        if not task:
+            return {"error": "Task not found"}, 404
+
+        db.delete(task)
+        db.commit()
+    return {"message": "Task deleted"}, 200
 
 
 # frontend route

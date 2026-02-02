@@ -39,7 +39,7 @@ h1 {
 .table-header,
 .table-row {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
     align-items: center;
     padding: 14px 18px;
 }
@@ -188,4 +188,50 @@ h1 {
     text-align: center;
     color: #2563eb;
     font-weight: 500;
+}
+
+
+.action {
+    display: flex;
+    gap:10px;
+    align-items: center;
+}
+
+.action-btn {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.status_todo {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+
+.status_in_progress {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+
+.status_done {
+    background-color: rgb(183, 255, 183);
+    color: rgba(11, 56, 14, 0.699);
+}
+
+
+.task_info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.tasks_description {
+    font-size: smaller;
+    opacity: 0.6;
+    padding-right: 5px;
 }
