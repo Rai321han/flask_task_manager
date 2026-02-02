@@ -1,13 +1,17 @@
-from flask import Flask, request, render_template, redirect, abort, jsonify
+from logger.logger import setup_logger
+import logging
+from flask import Flask, request, render_template, abort, jsonify
 from db.db import get_db
 from db.models import Task, TaskStatus
 from datetime import date
-from sqlalchemy import select, update, or_, asc, desc
+from sqlalchemy import select, or_, asc, desc
 from validation.validate import TaskSchema
 from pydantic import ValidationError
 
-from dotenv import load_dotenv
+setup_logger()
 
+logging.getLogger("werkzeug").setLevel(logging.WARNING)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
@@ -18,6 +22,7 @@ def show_task(id):
         stmt = select(Task).where(Task.id == id)
         task = db.execute(stmt).scalar_one_or_none()
         if not task:
+            logger.error("Task not found | id=%s", id)
             return {"error": "Task not found"}, 404
         return task_to_dict(task)
 
@@ -41,12 +46,14 @@ def alltasks():
             try:
                 stmt = stmt.where(Task.status == TaskStatus(status))
             except ValueError:
+                logger.error("Invalid task status")
                 return "Invalid status", 400
 
         sort_column = Task.created_at if sort_by == "created_at" else Task.due_date
         stmt = stmt.order_by(desc(sort_column) if order == "desc" else asc(sort_column))
 
         tasks = db.execute(stmt).scalars().all()
+        logger.info("Tasks fetch successfully")
         return [task_to_dict(t) for t in tasks]
 
 
@@ -55,7 +62,10 @@ def create_task():
     try:
         validated = TaskSchema(**request.get_json())
     except ValidationError as e:
-        return jsonify({"errors": e.errors()}), 400
+        logger.warning(
+            "Validation error while creating task: %s", e.errors()[0].get("msg")
+        )
+        return jsonify({"errors": e.errors()[0].get("msg")}), 400
 
     task = Task(
         title=validated.title,
@@ -68,6 +78,8 @@ def create_task():
         db.add(task)
         db.commit()
         db.refresh(task)
+
+    logger.info("Task created successfully | id=%s | title=%s", task.id, task.title)
 
     return {
         "id": task.id,
@@ -84,6 +96,7 @@ def update_task(task_id):
     data = request.get_json()
 
     if not data:
+        logger.error("Updating tasks | No data provided")
         abort(400, "No data provided")
 
     with get_db() as db:
@@ -92,7 +105,6 @@ def update_task(task_id):
         if not task:
             abort(404, "Task not found")
 
-        # 🔹 PATCH only provided fields
         if "title" in data:
             task.title = data["title"]
 
@@ -103,15 +115,15 @@ def update_task(task_id):
             try:
                 task.status = TaskStatus(data["status"])
             except ValueError:
-                return {
-                    "error": f"Invalid status value, must be one of: {[s.value for s in TaskStatus]}"
-                }, 400
+                logger.error("Update task failed | id=%s", task_id)
+                return {"error": f"invalid status"}, 400
 
         if "due_date" in data:
             task.due_date = (
                 date.fromisoformat(data["due_date"]) if data["due_date"] else None
             )
 
+        logger.info("Task updated successfully | id=%s", task_id)
         db.commit()
         db.refresh(task)
 
@@ -129,28 +141,18 @@ def task_to_dict(task: Task):
     }
 
 
-@app.post("/tasks/<int:id>/status")
-def update_task_status(id):
-    new_status = request.form.get("status")
-
-    with get_db() as db:
-        stmt = update(Task).where(Task.id == id).values(status=TaskStatus(new_status))
-        db.execute(stmt)
-        db.commit()
-
-    return redirect(f"/tasks/{id}")
-
-
 @app.delete("/api/v1/tasks/<int:id>")
 def delete_task(id):
     with get_db() as db:
         task = db.execute(select(Task).where(Task.id == id)).scalar_one_or_none()
 
         if not task:
-            return {"error": "Task not found"}, 404
+            logger.error("deletion; non existing id =%s", id)
+            return {"error": "Non-existing id"}, 404
 
         db.delete(task)
         db.commit()
+    logger.info("Task created successfully | id=%s", id)
     return {"message": "Task deleted"}, 200
 
 
@@ -161,15 +163,3 @@ def home():
         stmt = select(Task)
         tasks = db.execute(stmt).scalars().all()
     return render_template("task/tasks_list.html", tasks=tasks)
-
-
-@app.get("/tasks/<int:id>")
-def task_detail(id):
-    with get_db() as db:
-        stmt = select(Task).where(Task.id == id)
-        task = db.execute(stmt).scalar_one_or_none()
-
-    if not task:
-        return "Task not found", 404
-
-    return render_template("task/task_details.html", task=task)
