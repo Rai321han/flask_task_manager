@@ -1,0 +1,108 @@
+{% extends "task/base.html" %}
+
+{% block title %}Tasks{% endblock %}
+
+{% block content %}
+<!-- FILTER/SEARCH CONTROLS -->
+<div class="filters" style="margin-bottom:20px; display:flex; gap:12px; flex-wrap:wrap;">
+    <input id="search" type="text" placeholder="Search title/description..."
+        style="padding:8px 12px; border-radius:6px; border:1px solid #e5e7eb; flex:1; min-width:200px;">
+
+    <select id="status" style="padding:8px 12px; border-radius:6px; border:1px solid #e5e7eb;">
+        <option value="">All Status</option>
+        <option value="todo">To Do</option>
+        <option value="in_progress">In Progress</option>
+        <option value="done">Done</option>
+    </select>
+
+    <select id="sort" style="padding:8px 12px; border-radius:6px; border:1px solid #e5e7eb;">
+        <option value="created_at">Sort by Created</option>
+        <option value="due_date">Sort by Due Date</option>
+    </select>
+
+    <select id="order" style="padding:8px 12px; border-radius:6px; border:1px solid #e5e7eb;">
+        <option value="asc">Asc</option>
+        <option value="desc">Desc</option>
+    </select>
+</div>
+
+<!-- TASKS TABLE -->
+<div id="tasks-container" class="table">
+    <div class="table-header">
+        <div>Title</div>
+        <div>Status</div>
+        <div>Due</div>
+        <div>Details</div>
+    </div>
+    <!-- Task rows will be inserted here dynamically -->
+</div>
+
+<!-- NO TASKS MESSAGE -->
+<div id="no-tasks" style="display:none; text-align:center; margin-top:20px; color:#64748b; font-weight:500;">
+    No tasks found.
+</div>
+
+<script>
+    async function fetchTasks() {
+        const q = document.getElementById("search").value.trim();
+        const status = document.getElementById("status").value;
+        const sort = document.getElementById("sort").value;
+        const order = document.getElementById("order").value;
+
+        const params = new URLSearchParams();
+
+        // Only add query params if they have a value
+        if (q) params.append("q", q);
+        if (status) params.append("status", status); // won't append if empty string
+        if (sort) params.append("sort", sort);
+        if (order) params.append("order", order);
+
+        const res = await fetch(`/api/v1/tasks?${params}`);
+        const tasks = await res.json();
+
+        const container = document.getElementById("tasks-container");
+        const noTasksMsg = document.getElementById("no-tasks");
+
+        // Clear previous rows except header
+        container.querySelectorAll(".table-row").forEach(row => row.remove());
+
+        if (tasks.length === 0) {
+            noTasksMsg.style.display = "block";
+            return;
+        } else {
+            noTasksMsg.style.display = "none";
+        }
+
+        // Render task rows
+        tasks.forEach(task => {
+            const row = document.createElement("div");
+            row.className = "table-row";
+
+            row.innerHTML = `
+            <div class="title">${task.title}</div>
+            <div>
+                <span class="badge ${task.status.toLowerCase().replace(" ", "_")}">
+                    ${task.status.replace("_", " ")}
+                </span>
+            </div>
+            <div class="muted">${task.due_date || "—"}</div>
+            <div>
+                <a href="/tasks/${task.id}" class="link">View →</a>
+            </div>
+        `;
+
+            container.appendChild(row);
+        });
+    }
+
+    // Initial fetch
+    fetchTasks();
+
+    // Add listeners for search and filters
+    document.querySelectorAll("#search, #status, #sort, #order").forEach(el => {
+        el.addEventListener("change", fetchTasks);
+        el.addEventListener("keyup", fetchTasks);
+    });
+</script>
+
+{% endblock %}
