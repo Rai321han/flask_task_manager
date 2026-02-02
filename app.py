@@ -29,10 +29,10 @@ app = Flask(__name__)
 @app.get("/api/v1/tasks/<int:id>")
 def show_task(id):
     """Retrieve a single task by its ID.
-    
+
     Args:
         id (int): The unique identifier of the task.
-    
+
     Returns:
         dict: Task data as a dictionary, or error response with 404 status if not found.
     """
@@ -48,13 +48,13 @@ def show_task(id):
 @app.get("/api/v1/tasks")
 def alltasks():
     """Retrieve all tasks with optional filtering and sorting.
-    
+
     Query Parameters:
         q (str): Search query to filter tasks by title or description.
         status (str): Filter tasks by status.
         sort (str): Field to sort by (default: 'created_at').
         order (str): Sort order 'asc' or 'desc' (default: 'asc').
-    
+
     Returns:
         list: List of task dictionaries matching the criteria.
     """
@@ -89,19 +89,20 @@ def alltasks():
 @app.post("/api/v1/tasks")
 def create_task():
     """Create a new task.
-    
+
     Request JSON Body:
         title (str): Task title.
         description (str): Task description.
         status (str): Task status.
         due_date (str, optional): Due date in ISO format.
-    
+
     Returns:
         tuple: Task data dictionary and 201 status code on success,
                or error response with 400 status code on validation failure.
     """
     try:
         validated = TaskSchema(**request.get_json())
+
     except ValidationError as e:
         logger.warning(
             "Validation error while creating task: %s", e.errors()[0].get("msg")
@@ -135,16 +136,16 @@ def create_task():
 @app.patch("/api/v1/tasks/<int:task_id>")
 def update_task(task_id):
     """Update an existing task.
-    
+
     Args:
         task_id (int): The unique identifier of the task to update.
-    
+
     Request JSON Body:
         title (str, optional): Updated task title.
         description (str, optional): Updated task description.
         status (str, optional): Updated task status.
         due_date (str, optional): Updated due date in ISO format.
-    
+
     Returns:
         tuple: Updated task data dictionary and 200 status code on success,
                or error response with 400/404 status code on failure.
@@ -189,10 +190,10 @@ def update_task(task_id):
 
 def task_to_dict(task: Task):
     """Convert a Task object to a dictionary.
-    
+
     Args:
         task (Task): The Task object to convert.
-    
+
     Returns:
         dict: Dictionary representation of the task with all fields
               including id, title, description, status, created_at, and due_date.
@@ -210,10 +211,10 @@ def task_to_dict(task: Task):
 @app.delete("/api/v1/tasks/<int:id>")
 def delete_task(id):
     """Delete a task by its ID.
-    
+
     Args:
         id (int): The unique identifier of the task to delete.
-    
+
     Returns:
         tuple: Success message and 200 status code on successful deletion,
                or error response with 404 status code if task not found.
@@ -235,7 +236,7 @@ def delete_task(id):
 @app.get("/")
 def home():
     """Render the home page.
-    
+
     Returns:
         str: Rendered HTML template for the home/index page.
     """
@@ -245,7 +246,7 @@ def home():
 @app.get("/tasks")
 def tasks():
     """Render the tasks list page with all tasks.
-    
+
     Returns:
         str: Rendered HTML template displaying all tasks.
     """
