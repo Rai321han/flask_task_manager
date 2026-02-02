@@ -82,7 +82,7 @@ task_manager/
    ```
 2. **Navigate to project directory**
     ```bash
-   cd task_manager
+   cd flask_task_manager
    ```
 
 2. **Create and activate a virtual environment:**
@@ -111,7 +111,7 @@ task_manager/
     ```
 5. **Initialize the database:**
    ```bash
-   python -m init_db.py
+   python -m db.init_db
    ```
 6. **Run the project:**
    ```bash
