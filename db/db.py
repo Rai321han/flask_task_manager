@@ -16,7 +16,7 @@ if not DATABASE_URL:
 
 engine = create_engine(
     DATABASE_URL,
-    echo=True,  # logs SQL queries
+    echo=False,  # logs SQL queries
 )
 
 SessionLocal = sessionmaker(bind=engine)
