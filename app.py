@@ -76,7 +76,7 @@ def alltasks():
                 stmt = stmt.where(Task.status == TaskStatus(status))
             except ValueError:
                 logger.error("Invalid task status")
-                return "Invalid status", 400
+                return {"error": "invalid status value"}, 404
 
         sort_column = Task.created_at if sort_by == "created_at" else Task.due_date
         stmt = stmt.order_by(desc(sort_column) if order == "desc" else asc(sort_column))
