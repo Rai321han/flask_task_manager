@@ -124,7 +124,7 @@ DATABASE_URL=database connection string (etc., sqlite:///task_manager.db)
    flask run
    ```
 ---
-```
+
 
 The application will be available at:
 - **API Base URL:** `http://localhost:5000/api/v1`
