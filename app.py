@@ -88,21 +88,9 @@ def alltasks():
 
 @app.post("/api/v1/tasks")
 def create_task():
-    """Create a new task.
-
-    Request JSON Body:
-        title (str): Task title.
-        description (str): Task description.
-        status (str): Task status.
-        due_date (str, optional): Due date in ISO format.
-
-    Returns:
-        tuple: Task data dictionary and 201 status code on success,
-               or error response with 400 status code on validation failure.
-    """
+    """Create a new task."""
     try:
         validated = TaskSchema(**request.get_json())
-
     except ValidationError as e:
         logger.warning(
             "Validation error while creating task: %s", e.errors()[0].get("msg")
@@ -121,16 +109,22 @@ def create_task():
         db.commit()
         db.refresh(task)
 
-    logger.info("Task created successfully | id=%s | title=%s", task.id, task.title)
+    # Log all non-None properties
+    task_data = {
+        k: (v.isoformat() if isinstance(v, date) else v)
+        for k, v in {
+            "id": task.id,
+            "title": task.title,
+            "description": task.description,
+            "status": task.status.value,
+            "due_date": task.due_date,
+            "created_at": task.created_at,
+        }.items()
+        if v is not None
+    }
 
-    return {
-        "id": task.id,
-        "title": task.title,
-        "description": task.description,
-        "status": task.status.value,
-        "created_at": task.created_at.isoformat(),
-        "due_date": task.due_date.isoformat() if task.due_date else None,
-    }, 201
+    logger.info("Task created successfully | %s", task_data)
+    return task_data, 201
 
 
 @app.patch("/api/v1/tasks/<int:task_id>")
