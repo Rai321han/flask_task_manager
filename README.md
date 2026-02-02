@@ -6,16 +6,14 @@ A Flask-based REST API and web interface for managing tasks with SQLAlchemy ORM 
 
 - [Overview](#overview)
 - [Project Structure](#project-structure)
-- [Installation](#installation)
 - [Configuration](#configuration)
-- [Running the Application](#running-the-application)
+- [Installation](#installation)
 - [API Documentation](#api-documentation)
   - [Base URL](#base-url)
   - [Endpoints](#endpoints)
   - [Request/Response Examples](#requestresponse-examples)
   - [Status Codes](#status-codes)
 - [Frontend Routes](#frontend-routes)
-- [Database Schema](#database-schema)
 - [Technologies Used](#technologies-used)
 
 ---
@@ -66,6 +64,25 @@ task_manager/
 
 ```
 
+## Configuration
+
+### Environment Variables
+
+Create a `.env` file in the project root with the following variables:
+
+```env
+FLASK_APP=app.py
+FLASK_ENV=development
+DATABASE_URL=database connection string (etc., sqlite:///task_manager.db)
+```
+
+**Variables:**
+- `FLASK_APP`: Entry point for Flask application
+- `FLASK_ENV`: Environment mode (development/production)
+- `DATABASE_URL`: Database connection string (SQLite by default)
+
+---
+
 ---
 
 ## Installation
@@ -78,8 +95,12 @@ task_manager/
 
 ### Steps
 
-1. **Clone or navigate to the project directory:**
+1. **Clone the project:**
    ```bash
+   git clone https://github.com/Rai321han/flask_task_manager.git
+   ```
+2. **Navigate to project directory**
+    ```bash
    cd task_manager
    ```
 
@@ -96,36 +117,13 @@ task_manager/
 
 4. **Initialize the database:**
    ```bash
-   python db/init_db.py
+   python -m init_db.py
    ```
-
+5. **Run the project:**
+   ```bash
+   flask run
+   ```
 ---
-
-## Configuration
-
-### Environment Variables
-
-Create a `.env` file in the project root with the following variables:
-
-```env
-FLASK_APP=app.py
-FLASK_ENV=development
-DATABASE_URL=sqlite:///task_manager.db
-```
-
-**Variables:**
-- `FLASK_APP`: Entry point for Flask application
-- `FLASK_ENV`: Environment mode (development/production)
-- `DATABASE_URL`: Database connection string (SQLite by default)
-
----
-
-## Running the Application
-
-Start the Flask development server:
-
-```bash
-flask run
 ```
 
 The application will be available at:
